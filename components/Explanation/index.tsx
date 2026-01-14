@@ -70,31 +70,33 @@ export default function Explanation() {
 
       <ul>
         <li>
-          1. &quot;up&quot; - on each clock pulse, simply go up to the next step in the sequence (or wrap back around to
-          the first step of course).
+          1. <b>up</b> - on each clock pulse, simply go up to the next step in the sequence (or wrap back around to the
+          first step of course).
         </li>
         <li>
-          2. &quot;down&quot; - go down to the previous step in the sequence (or wrap back around to the last step).
+          2. <b>down</b> - go down to the previous step in the sequence (or wrap back around to the last step).
         </li>
         <li>
-          3. &quot;up/down&quot; - go up to the next step until the end, then go down to the previous step until the
+          3. <b>up/down</b> - go up to the next step until the end, then go down to the previous step until the
           beginning, then repeat. When I implemented this one, I have to keep track of which phase of the sequence we
           are in, going forward, or going backward.
         </li>
-        <li>4. &quot;random&quot; - pick a random step in the sequence on each gate input.</li>
         <li>
-          5. &quot;+2-1&quot; - for this sequence type, you switch between going forward 2 steps and going backward 1
-          step, wrapping as necessary. So, on one gate pulse you will advance 2 steps, and on the next gate pulse you
-          will go back 1 step. When I implemented this one, I have to keep track of which phase of the sequence we are
-          in, going forward, or going backward.
+          4. <b>random</b> - pick a random step in the sequence on each gate input.
         </li>
         <li>
-          6. &quot;+1-2&quot; - this is similar to the previous sequence type, but instead you switch between going
-          forward 1 step and going backward 2 steps.
+          5. <b>+2-1</b> - for this sequence type, you switch between going forward 2 steps and going backward 1 step,
+          wrapping as necessary. So, on one gate pulse you will advance 2 steps, and on the next gate pulse you will go
+          back 1 step. When I implemented this one, I have to keep track of which phase of the sequence we are in, going
+          forward, or going backward.
         </li>
         <li>
-          7. &quot;-3+5&quot; - this is similar to the previous sequence type, but instead you switch between going
-          backward 3 steps and going forward 5 steps.
+          6. <b>+1-2</b> - this is similar to the previous sequence type, but instead you switch between going forward 1
+          step and going backward 2 steps.
+        </li>
+        <li>
+          7. <b>-3+5</b> - this is similar to the previous sequence type, but instead you switch between going backward
+          3 steps and going forward 5 steps.
         </li>
         <li>8. Not implemented yet! I&apos;ll decide what type of sequence we should have here later.</li>
       </ul>
