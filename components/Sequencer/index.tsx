@@ -63,29 +63,26 @@ export default function Sequencer({ initialized }: SequencerProps) {
     seqPhase.current = true
   }, [sequenceIndex])
 
-  const advanceStep = useCallback(
-    (currentPhase: boolean) => {
-      if (skip.every((s) => s)) return
+  const advanceStep = useCallback(() => {
+    if (skip.every((s) => s)) return
 
-      setStep((step) => {
-        const sequenceFunc = sequences.current[Object.keys(sequences.current)[sequenceIndex]]
-        let nextStep = sequenceFunc(step, currentPhase)
-        let depth = 0
-        while (skip[nextStep] && depth < NUM_STEPS) {
-          nextStep = sequenceFunc(nextStep, currentPhase)
-          depth++
-        }
+    setStep((step) => {
+      const sequenceFunc = sequences.current[Object.keys(sequences.current)[sequenceIndex]]
+      let nextStep = sequenceFunc(step, seqPhase.current)
+      let depth = 0
+      while (skip[nextStep] && depth < NUM_STEPS) {
+        nextStep = sequenceFunc(nextStep, seqPhase.current)
+        depth++
+      }
 
-        return nextStep
-      })
-    },
-    [skip, sequenceIndex]
-  )
+      return nextStep
+    })
+  }, [skip, sequenceIndex])
 
   useEffect(() => {
     // advance sequencer at rising edge of internal LFO
     if (lfo === 1 && lfoRef.current === 0) {
-      advanceStep(seqPhase.current)
+      advanceStep()
     }
 
     lfoRef.current = lfo
@@ -115,6 +112,10 @@ export default function Sequencer({ initialized }: SequencerProps) {
             <p style={{ color: secondaryColor }}>{internalFreq.toFixed(2)} Hz</p>
           </div>
 
+          <button onClick={advanceStep}>Manual Step</button>
+        </div>
+
+        <div className={styles.sequencerControls}>
           {/* sequence selector */}
           <div className={styles.sequenceSelector}>
             <div className={styles.knobControl}>
@@ -163,7 +164,7 @@ export default function Sequencer({ initialized }: SequencerProps) {
         </div>
       </div>
     ),
-    [step, skip, internalFreq, sequenceIndex]
+    [step, skip, internalFreq, sequenceIndex, advanceStep]
   )
 
   return content
