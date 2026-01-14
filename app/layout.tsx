@@ -8,8 +8,8 @@ const shareTechMono = Share_Tech_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'L-AMB Sequencer / Synth - LFO',
-  description: 'Synth LFO with duty cycle',
+  title: 'L-AMB Sequencer / Synth - Sequencer',
+  description: '8-step musical sequencer for the L-AMB Synthesizer',
 }
 
 export default function RootLayout({
