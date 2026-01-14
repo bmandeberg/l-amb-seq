@@ -1,5 +1,3 @@
-import SyntaxHighlighter from 'react-syntax-highlighter'
-import { a11yLight } from 'react-syntax-highlighter/dist/esm/styles/hljs'
 import styles from './index.module.css'
 
 export default function Explanation() {
@@ -8,160 +6,112 @@ export default function Explanation() {
       <h3>ABOUT</h3>
 
       <span>
-        This demo represents one &quot;LFO&quot; (low-frequency oscillator), which includes the <b>FREQ</b> (frequency),{' '}
-        <b>DUTY</b> (duty cycle), <b>SHAPE</b> and <b>RANGE</b> controls. There will be 3 of these LFOs on the
-        synthesizer, each coming out of one channel of a MCP4728. Also, the LFOs can sync their frequency to an external
-        clock signal.
+        The last thing we are building is a musical sequencer. A sequencer is a device that plays a sequence of steps.
+        Our sequencer has 8 steps, and it can play various different types of sequences (sequence logic). You will
+        receive a gate pulse in, and on each pulse the sequencer will advance to the next step in the sequence. You will
+        output the current sequence step number by controlling the data pins of a 74HC238 3-to-8 line decoder.
       </span>
 
       <h3>CONTROLS</h3>
 
       <span>
-        The <b>FREQ</b> control sets the frequency of the LFO. When the <b>RANGE</b> is set to &quot;LO&quot; (low), the{' '}
-        <b>FREQ</b> can be adjusted freely from 0.05 Hz - 10 Hz. When the <b>RANGE</b> is set to &quot;HI&quot; (high),
-        the <b>FREQ</b> can be adjusted freely from 10 Hz - 2000 Hz.
+        In order to determine which type of <b>sequence</b> to play, I have an 8-position switch hooked up to a 74HC148
+        8-to-3 line encoder, so you will read the data pins of the 74HC148 to determine which sequence logic to use. For
+        now I only have 7 sequence logics to implement (which I will explain below), but we will add one more later.
       </span>
 
       <span>
-        The <b>DUTY</b> control sets the duty cycle (symmetry) of the LFO waveform. When <b>SHAPE</b> is set to square,{' '}
-        <b>DUTY</b> controls typical pulse-width modulation. When <b>SHAPE</b> is set to triangle, <b>DUTY</b> adjusts
-        the symmetry of the triangle wave so that it can become a ramp or sawtooth wave.
+        The <b>Manual Step</b> button allows you to manually advance the sequencer one step at a time.
       </span>
 
       <span>
-        The <b>SHAPE</b> control selects between a square wave and a triangle wave for the LFO waveform.
-      </span>
-
-      <span>
-        The <b>RANGE</b> control selects between low and high ranges for the <b>FREQ</b> control. See the <b>FREQ</b>{' '}
-        description for exact frequency ranges.
-      </span>
-
-      <span>
-        When <b>USE EXTERNAL CLOCK</b> is selected, the <b>FREQ</b> control selects a clock division or multiplication,
-        so that the frequency of the LFO can be set from ÷9 to ×9 of the external clock frequency.
+        Beneath each step number there is a small <b>X</b> button that allows you to skip that step when the sequencer
+        is playing. If the sequencer would land on that step, it will instead advance to the next step after that in the
+        chosen sequence.
       </span>
 
       <h3>IMPLEMENTATION</h3>
 
-      <span>You can implement this any way you&apos;d like, but I can offer some notes on how I implemented it.</span>
+      <span>The sequencer uses all of Pin Header 2.</span>
 
       <span>
-        For the <b>FREQ</b> control, don&apos;t forget to use a logarithmic scale. However, when we turn on{' '}
-        <b>USE EXTERNAL CLOCK</b>, we need to use a linear scale for <b>FREQ</b> because it will just be selecting a
-        clock division/multiplication option.
-      </span>
-
-      <h4>Implementing the LFO</h4>
-
-      <span>
-        I would recommend computing the LFO value in real time, instead of based on a lookup table. For this demo, here
-        is the function that continuously computes the normalized LFO value:
-      </span>
-
-      <div className={styles.codeBlock}>
-        <SyntaxHighlighter language="javascript" style={a11yLight}>
-          {`
-process(_inputs, outputs, parameters) {
-  const output = outputs[0][0] // mono
-  const freq = parameters.frequency[0]
-  const duty = parameters.dutyCycle[0]
-  const shape = parameters.shape[0] | 0 // coerce to int 0/1
-  const inc = freq / sampleRate
-
-  for (let i = 0; i < output.length; i++) {
-    this.phase += inc
-    if (this.phase >= 1) this.phase -= 1
-
-    let v
-    if (shape === 0) {
-      // Square / PWM
-      v = this.phase < duty ? 1 : 0
-    } else {
-      // Triangle family
-      if (this.phase < duty) {
-        // Rising section: 0 → 1 over [0, duty)
-        v = this.phase / Math.max(duty, 1e-6)
-      } else {
-        // Falling section: 1 → 0 over [duty, 1)
-        v = 1 - (this.phase - duty) / Math.max(1 - duty, 1e-6)
-      }
-    }
-
-    output[i] = v // this is the final output, between 0 and 1
-  }
-  return true
-}
-            `}
-        </SyntaxHighlighter>
-      </div>
-
-      <span>
-        For a different example of how I implemented the realtime LFO in my Arduino prototype, you can view the code{' '}
-        <a target="_blank" href="https://github.com/bmandeberg/L-AMB/blob/i2c-quad-dac/LFO.cpp#L30">
-          here on GitHub
-        </a>
-        .
-      </span>
-
-      <h4>Using External Clock</h4>
-
-      <span>
-        There is one external clock input that all 3 LFOs can sync to. Even though this demo uses a knob to set the
-        external clock frequency, on the actual hardware there won&apos;t be a knob, there will just be one digital
-        input pin for the clock input where we can plug in a signal. In my Arduino prototype I used an interrupt input.
-        I simply keep track of the time between input pulses, and that is my external clock frequency. If the time
-        between pulses is more than 20 seconds (0.05 Hz), I don&apos;t sync the LFOs to the external clock. You can see
-        this implemented in my Arduino prototype{' '}
-        <a target="_blank" href="https://github.com/bmandeberg/L-AMB/blob/i2c-quad-dac/L-AMB.ino#L105">
-          here on GitHub
-        </a>
-        .
+        You will receive your gate input at PH2 pin 1. Please note that even though this web demo uses an internal
+        oscillator to clock the sequencer, we will actually only have the gate input for advancing the sequencer on the
+        real thing.
       </span>
 
       <span>
-        When we <b>USE EXTERNAL CLOCK</b>, the LFO <b>FREQ</b> control selects between 17 discrete clock div/mult
-        options across the range of the potentiometer. The options are: ÷9, ÷8, ÷7, ÷6, ÷5, ÷4, ÷3, ÷2, ×1, ×2, ×3, ×4,
-        ×5, ×6, ×7, ×8, ×9. So for example, if the external clock frequency is 1 Hz, and the <b>FREQ</b> control is set
-        to ×2, then the LFO frequency will be 2 Hz.
+        The rotary switch and 74HC148 are on my analog board, but you will have 3 digital inputs to receive the data
+        pins of the 74HC148 on PH2 pins 13, 11, and 9. Pin 13 is the LSB (A0), and pin 9 is the MSB (A2). Remember that
+        the 74HC148 has active LOW logic levels!
       </span>
-
-      <h3>PINS</h3>
 
       <span>
-        • LFO A <b>FREQ</b> control is at Pin Header 1 (PH1) pin 5 (analog input)
-        <br />• LFO A <b>DUTY</b> control is at PH1 pin 7 (analog input)
-        <br />• LFO A <b>SHAPE</b> control is at PH1 pin 3 (digital input)
-        <br />• LFO A <b>RANGE</b> control is at PH1 pin 1 (digital input)
-        <br />
-        <br />• LFO B <b>FREQ</b> control is at PH1 pin 6 (analog input)
-        <br />• LFO B <b>DUTY</b> control is at PH1 pin 4 (analog input)
-        <br />• LFO B <b>SHAPE</b> control is at PH1 pin 12 (digital input)
-        <br />• LFO B <b>RANGE</b> control is at PH1 pin 16 (digital input)
-        <br />
-        <br />• LFO C <b>FREQ</b> control is at PH1 pin 13 (analog input)
-        <br />• LFO C <b>DUTY</b> control is at PH1 pin 15 (analog input)
-        <br />• LFO C <b>SHAPE</b> control is at PH1 pin 9 (digital input)
-        <br />• LFO C <b>RANGE</b> control is at PH1 pin 11 (digital input)
-        <br />
-        <br />• External clock input is at PH3 pin 1 (digital input, interrupt?).
+        Most of the hardware for the sequencer is on my analog board, but you control which step is currently active
+        with 3 digital outputs that set the data pins of a 74HC238 3-to-8 line decoder. You will set the data pins on
+        PH2 pins 7, 5, and 3. Pin 7 is the LSB (A0), and pin 3 is the MSB (A2). Unlike the 74HC148, the 74HC238 uses
+        active HIGH logic levels! Sorry for the confusion 😊
       </span>
+
+      <span>
+        We have one digital input for the <b>Manual Step</b> button at PH2 pin 15. It uses active HIGH logic. I have a
+        hardware debounce resistor on all buttons/switches, but we should probably do some software debouncing on them
+        as well?
+      </span>
+
+      <span>
+        We have 8 digital inputs for each of the skip buttons (the <b>X</b> buttons in this demo which allow you to skip
+        sequence steps). The first skip button (for step 1) is at PH2 pin 16. The step 2 skip button is at pin 14, step
+        3 is at pin 12, step 4 is at pin 10, step 5 is at pin 8, step 6 is at pin 6, step 7 is at pin 4, and step 8 is
+        at pin 2. All skip buttons use active HIGH logic.
+      </span>
+
+      <h4>Sequence Types</h4>
+
+      <ul>
+        <li>
+          1. &quot;up&quot; - on each clock pulse, simply go up to the next step in the sequence (or wrap back around to
+          the first step of course).
+        </li>
+        <li>
+          2. &quot;down&quot; - go down to the previous step in the sequence (or wrap back around to the last step).
+        </li>
+        <li>
+          3. &quot;up/down&quot; - go up to the next step until the end, then go down to the previous step until the
+          beginning, then repeat. When I implemented this one, I have to keep track of which phase of the sequence we
+          are in, going forward, or going backward.
+        </li>
+        <li>4. &quot;random&quot; - pick a random step in the sequence on each gate input.</li>
+        <li>
+          5. &quot;+2-1&quot; - for this sequence type, you switch between going forward 2 steps and going backward 1
+          step, wrapping as necessary. So, on one gate pulse you will advance 2 steps, and on the next gate pulse you
+          will go back 1 step. When I implemented this one, I have to keep track of which phase of the sequence we are
+          in, going forward, or going backward.
+        </li>
+        <li>
+          6. &quot;+1-2&quot; - this is similar to the previous sequence type, but instead you switch between going
+          forward 1 step and going backward 2 steps.
+        </li>
+        <li>
+          7. &quot;-3+5&quot; - this is similar to the previous sequence type, but instead you switch between going
+          backward 3 steps and going forward 5 steps.
+        </li>
+        <li>8. Not implemented yet! I&apos;ll decide what type of sequence we should have here later.</li>
+      </ul>
 
       <h3>GITHUB</h3>
 
-      <a target="_blank" href="https://github.com/bmandeberg/l-amb-lfo">
-        https://github.com/bmandeberg/l-amb-lfo
+      <a target="_blank" href="https://github.com/bmandeberg/l-amb-seq">
+        https://github.com/bmandeberg/l-amb-seq
       </a>
 
       <span>
-        This example website is a NextJS project, so the main code to check would be at{' '}
-        <a target="_blank" href="https://github.com/bmandeberg/l-amb-lfo/blob/main/app/page.tsx">
-          /app/page.tsx
-        </a>{' '}
-        and{' '}
-        <a target="_blank" href="https://github.com/bmandeberg/l-amb-lfo/blob/main/components/LFOControls/index.tsx">
-          /components/LFOControls/index.tsx
+        This example website is a NextJS project, and the main code to check would be the Sequencer component.{' '}
+        <a target="_blank" href="https://github.com/bmandeberg/l-amb-seq/blob/main/components/Sequencer/index.tsx">
+          /components/Sequencer/index.tsx
         </a>
+        <br />
+        My javascript implementation of the sequence logic is in there, so you can use that as a reference.
       </span>
     </div>
   )
