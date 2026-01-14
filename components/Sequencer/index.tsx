@@ -102,6 +102,15 @@ export default function Sequencer({ initialized }: SequencerProps) {
     [sequenceIndex]
   )
 
+  // Helper function to get step pin state based on bit position
+  // 74HC238 has active-HIGH outputs
+  const getStepPinState = useCallback(
+    (bitPosition: number): boolean => {
+      return (step & (1 << bitPosition)) !== 0
+    },
+    [step]
+  )
+
   const content = useMemo(
     () => (
       <div className={styles.sequencer}>
@@ -152,7 +161,7 @@ export default function Sequencer({ initialized }: SequencerProps) {
             INPUT from 74HC148
           </p>
 
-          <div className={styles.pins}>
+          <div className={styles.pins} style={{ marginTop: -32 }}>
             <div className={styles.pin}>
               <span>PIN 13</span>
               <div className={styles.pinData}>
@@ -209,9 +218,55 @@ export default function Sequencer({ initialized }: SequencerProps) {
             </div>
           ))}
         </div>
+
+        <div className={styles.outputPins}>
+          <p>
+            pin header 2
+            <br />
+            OUTPUT from 74HC238
+          </p>
+
+          <div className={styles.pins}>
+            <div className={styles.pin}>
+              <span>PIN 7</span>
+              <div className={styles.pinData}>
+                <div
+                  className={styles.pinGraphic}
+                  style={{ backgroundColor: getStepPinState(0) ? secondaryColor : gray }}></div>
+                <span style={{ color: getStepPinState(0) ? secondaryColor : gray }}>
+                  {getStepPinState(0) ? 'HIGH' : 'LOW'}
+                </span>
+              </div>
+            </div>
+
+            <div className={styles.pin}>
+              <span>PIN 5</span>
+              <div className={styles.pinData}>
+                <div
+                  className={styles.pinGraphic}
+                  style={{ backgroundColor: getStepPinState(1) ? secondaryColor : gray }}></div>
+                <span style={{ color: getStepPinState(1) ? secondaryColor : gray }}>
+                  {getStepPinState(1) ? 'HIGH' : 'LOW'}
+                </span>
+              </div>
+            </div>
+
+            <div className={styles.pin}>
+              <span>PIN 3</span>
+              <div className={styles.pinData}>
+                <div
+                  className={styles.pinGraphic}
+                  style={{ backgroundColor: getStepPinState(2) ? secondaryColor : gray }}></div>
+                <span style={{ color: getStepPinState(2) ? secondaryColor : gray }}>
+                  {getStepPinState(2) ? 'HIGH' : 'LOW'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     ),
-    [step, skip, internalFreq, sequenceIndex, advanceStep]
+    [step, skip, internalFreq, sequenceIndex, advanceStep, getPinState, getStepPinState]
   )
 
   return content

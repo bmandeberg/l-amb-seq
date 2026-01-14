@@ -46,7 +46,6 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: -32px;
   font-size: 16px;
 }
 
@@ -68,6 +67,14 @@
   width: 2px;
   height: 16px;
   background-color: var(--gray);
+}
+
+.outputPins {
+  margin-left: -64px;
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
 }
 
 .syncSwitch {
