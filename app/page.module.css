@@ -12,11 +12,6 @@
   padding: 20px;
 }
 
-.playStopButton {
-  cursor: pointer;
-  pointer-events: all;
-}
-
 .content {
   display: flex;
   flex-direction: column;
@@ -95,5 +90,9 @@
     padding: 20px 0 0 20px;
     height: unset;
     overflow-y: auto;
+  }
+
+  .content {
+    align-items: flex-start;
   }
 }

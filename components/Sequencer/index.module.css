@@ -6,7 +6,7 @@
   display: flex;
   align-items: center;
   margin-top: -6px;
-  margin-left: -84px;
+  margin-left: -14px;
 }
 
 .sequenceStep {
@@ -37,14 +37,13 @@
   margin-top: -42px;
 }
 
-.sequencerControls p {
+.pinsText {
   font-size: 16px;
-  margin-top: -38px;
 }
 
 .pins {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   font-size: 16px;
 }
@@ -70,7 +69,7 @@
 }
 
 .outputPins {
-  margin-left: -64px;
+  margin-left: 12px;
   margin-top: 18px;
   display: flex;
   align-items: center;
@@ -108,7 +107,7 @@
 
 .sequenceSelector {
   display: flex;
-  margin-left: -84px;
+  margin-left: -14px;
 }
 
 .sequenceSelector p {
@@ -126,4 +125,16 @@
 .stepNum {
   font-size: 26px;
   font-weight: bold;
+}
+
+.playStopButton {
+  cursor: pointer;
+  pointer-events: all;
+  margin-top: -42px;
+}
+
+@media (max-width: 768px) {
+  .pinsText, .sequenceSelector p, .pins {
+    font-size: 14px;
+  }
 }

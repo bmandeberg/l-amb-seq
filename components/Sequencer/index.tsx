@@ -1,4 +1,7 @@
+'use client'
+
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import Image from 'next/image'
 import { LFOParameters } from '@/tone/createLFO'
 import useLFO from '@/hooks/useLFO'
 import LinearKnob from '@/components/LinearKnob'
@@ -14,17 +17,38 @@ const NUM_STEPS = 8
 
 interface SequencerProps {
   initialized: boolean
-  lfo1Phase?: React.RefObject<null | number>
+  playing: boolean
+  playStop: () => void
 }
 
-export default function Sequencer({ initialized }: SequencerProps) {
+export default function Sequencer({ initialized, playing, playStop }: SequencerProps) {
   const [step, setStep] = useState<number>(0)
   const [skip, setSkip] = useState<boolean[]>(() => Array(NUM_STEPS).fill(false))
   const [internalFreq, setInternalFreq] = useState<number>(1)
   const [sequenceIndex, setSequenceIndex] = useState<number>(0)
+  const [isClient, setIsClient] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
 
   const { value: lfo, setFrequency } = useLFO(initialized, defaultSeqLfo)
   const lfoRef = useRef<number>(lfo)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  useEffect(() => {
+    if (!isClient) return
+
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+
+    // Set initial value
+    handleResize()
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [isClient])
 
   const skipRef = useRef(skip)
   useEffect(() => {
@@ -111,11 +135,68 @@ export default function Sequencer({ initialized }: SequencerProps) {
     [step]
   )
 
+  const inputPinsText = useMemo(
+    () => (
+      <p className={styles.pinsText} style={{ marginTop: -38 }}>
+        pin header 2
+        <br />
+        INPUT from 74HC148
+      </p>
+    ),
+    []
+  )
+
+  const inputPins = useMemo(
+    () => (
+      <div className={styles.pins} style={{ marginTop: -32 }}>
+        <div className={styles.pin}>
+          <span>PIN 13</span>
+          <div className={styles.pinData}>
+            <div
+              className={styles.pinGraphic}
+              style={{ backgroundColor: getPinState(0) ? secondaryColor : gray }}></div>
+            <span style={{ color: getPinState(0) ? secondaryColor : gray }}>{getPinState(0) ? 'HIGH' : 'LOW'}</span>
+          </div>
+        </div>
+
+        <div className={styles.pin}>
+          <span>PIN 11</span>
+          <div className={styles.pinData}>
+            <div
+              className={styles.pinGraphic}
+              style={{ backgroundColor: getPinState(1) ? secondaryColor : gray }}></div>
+            <span style={{ color: getPinState(1) ? secondaryColor : gray }}>{getPinState(1) ? 'HIGH' : 'LOW'}</span>
+          </div>
+        </div>
+
+        <div className={styles.pin}>
+          <span>PIN 9</span>
+          <div className={styles.pinData}>
+            <div
+              className={styles.pinGraphic}
+              style={{ backgroundColor: getPinState(2) ? secondaryColor : gray }}></div>
+            <span style={{ color: getPinState(2) ? secondaryColor : gray }}>{getPinState(2) ? 'HIGH' : 'LOW'}</span>
+          </div>
+        </div>
+      </div>
+    ),
+    [getPinState]
+  )
+
   const content = useMemo(
     () => (
       <div className={styles.sequencer}>
         {/* frequency control */}
         <div className={styles.sequencerControls}>
+          <Image
+            className={styles.playStopButton}
+            src={!playing ? '/play.svg' : '/stop.svg'}
+            alt="Play/Stop Button"
+            width={40}
+            height={40}
+            onClick={playStop}
+          />
+
           <div className={styles.knobControl}>
             <LinearKnob
               min={0.1}
@@ -155,44 +236,17 @@ export default function Sequencer({ initialized }: SequencerProps) {
             </p>
           </div>
 
-          <p>
-            pin header 2
-            <br />
-            INPUT from 74HC148
-          </p>
+          {!isMobile && inputPinsText}
 
-          <div className={styles.pins} style={{ marginTop: -32 }}>
-            <div className={styles.pin}>
-              <span>PIN 13</span>
-              <div className={styles.pinData}>
-                <div
-                  className={styles.pinGraphic}
-                  style={{ backgroundColor: getPinState(0) ? secondaryColor : gray }}></div>
-                <span style={{ color: getPinState(0) ? secondaryColor : gray }}>{getPinState(0) ? 'HIGH' : 'LOW'}</span>
-              </div>
-            </div>
-
-            <div className={styles.pin}>
-              <span>PIN 11</span>
-              <div className={styles.pinData}>
-                <div
-                  className={styles.pinGraphic}
-                  style={{ backgroundColor: getPinState(1) ? secondaryColor : gray }}></div>
-                <span style={{ color: getPinState(1) ? secondaryColor : gray }}>{getPinState(1) ? 'HIGH' : 'LOW'}</span>
-              </div>
-            </div>
-
-            <div className={styles.pin}>
-              <span>PIN 9</span>
-              <div className={styles.pinData}>
-                <div
-                  className={styles.pinGraphic}
-                  style={{ backgroundColor: getPinState(2) ? secondaryColor : gray }}></div>
-                <span style={{ color: getPinState(2) ? secondaryColor : gray }}>{getPinState(2) ? 'HIGH' : 'LOW'}</span>
-              </div>
-            </div>
-          </div>
+          {!isMobile && inputPins}
         </div>
+
+        {isMobile && (
+          <div className={styles.sequencerControls} style={{ margin: '24px 0' }}>
+            {inputPinsText}
+            {inputPins}
+          </div>
+        )}
 
         {/* main sequencer steps */}
         <div className={styles.sequenceSteps}>
@@ -220,7 +274,7 @@ export default function Sequencer({ initialized }: SequencerProps) {
         </div>
 
         <div className={styles.outputPins}>
-          <p>
+          <p className={styles.pinsText}>
             pin header 2
             <br />
             OUTPUT from 74HC238
@@ -266,7 +320,19 @@ export default function Sequencer({ initialized }: SequencerProps) {
         </div>
       </div>
     ),
-    [step, skip, internalFreq, sequenceIndex, advanceStep, getPinState, getStepPinState]
+    [
+      step,
+      skip,
+      internalFreq,
+      sequenceIndex,
+      advanceStep,
+      getStepPinState,
+      playStop,
+      playing,
+      isMobile,
+      inputPins,
+      inputPinsText,
+    ]
   )
 
   return content

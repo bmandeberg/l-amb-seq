@@ -47,18 +47,7 @@ export default function LAMBSeq() {
 
   return (
     <div className={styles.page} style={{ '--secondary-color': secondaryColor, '--gray': gray } as CSS}>
-      <div className={styles.content}>
-        <Image
-          className={styles.playStopButton}
-          src={!playing ? '/play.svg' : '/stop.svg'}
-          alt="Play/Stop Button"
-          width={40}
-          height={40}
-          onClick={playStop}
-        />
-      </div>
-
-      <Sequencer initialized={initialized} />
+      <Sequencer initialized={initialized} playing={playing} playStop={playStop} />
 
       <Explanation />
     </div>
