@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useCallback, useEffect, CSSProperties as CSS } from 'react'
-import Image from 'next/image'
 import * as Tone from 'tone'
 import Sequencer from '@/components/Sequencer'
 import Explanation from '@/components/Explanation'
