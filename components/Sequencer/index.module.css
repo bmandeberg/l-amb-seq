@@ -37,6 +37,39 @@
   margin-top: -42px;
 }
 
+.sequencerControls p {
+  font-size: 16px;
+  margin-top: -38px;
+}
+
+.pins {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: -32px;
+  font-size: 16px;
+}
+
+.pin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.pinData {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--gray);
+}
+
+.pinGraphic {
+  width: 2px;
+  height: 16px;
+  background-color: var(--gray);
+}
+
 .syncSwitch {
   display: flex;
   flex-direction: column;

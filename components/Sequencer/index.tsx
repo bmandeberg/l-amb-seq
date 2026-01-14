@@ -93,6 +93,15 @@ export default function Sequencer({ initialized }: SequencerProps) {
     setFrequency?.current?.(internalFreq)
   }, [internalFreq, setFrequency])
 
+  // Helper function to get pin state based on bit position
+  // 74HC148 has active-LOW outputs, so invert the bit
+  const getPinState = useCallback(
+    (bitPosition: number): boolean => {
+      return (sequenceIndex & (1 << bitPosition)) === 0
+    },
+    [sequenceIndex]
+  )
+
   const content = useMemo(
     () => (
       <div className={styles.sequencer}>
@@ -135,6 +144,44 @@ export default function Sequencer({ initialized }: SequencerProps) {
               <br />
               {Object.keys(sequences.current)[sequenceIndex]}
             </p>
+          </div>
+
+          <p>
+            pin header 2
+            <br />
+            INPUT from 74HC148
+          </p>
+
+          <div className={styles.pins}>
+            <div className={styles.pin}>
+              <span>PIN 13</span>
+              <div className={styles.pinData}>
+                <div
+                  className={styles.pinGraphic}
+                  style={{ backgroundColor: getPinState(0) ? secondaryColor : gray }}></div>
+                <span style={{ color: getPinState(0) ? secondaryColor : gray }}>{getPinState(0) ? 'HIGH' : 'LOW'}</span>
+              </div>
+            </div>
+
+            <div className={styles.pin}>
+              <span>PIN 11</span>
+              <div className={styles.pinData}>
+                <div
+                  className={styles.pinGraphic}
+                  style={{ backgroundColor: getPinState(1) ? secondaryColor : gray }}></div>
+                <span style={{ color: getPinState(1) ? secondaryColor : gray }}>{getPinState(1) ? 'HIGH' : 'LOW'}</span>
+              </div>
+            </div>
+
+            <div className={styles.pin}>
+              <span>PIN 9</span>
+              <div className={styles.pinData}>
+                <div
+                  className={styles.pinGraphic}
+                  style={{ backgroundColor: getPinState(2) ? secondaryColor : gray }}></div>
+                <span style={{ color: getPinState(2) ? secondaryColor : gray }}>{getPinState(2) ? 'HIGH' : 'LOW'}</span>
+              </div>
+            </div>
           </div>
         </div>
 
